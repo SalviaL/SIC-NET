@@ -16,6 +16,8 @@ If you want to use this code, cite as follow please:
   pages={1-5},}
 ```
 
+Data set proposed in this paper is on: https://github.com/SalviaL/CSU-RSISC10-DATASET
+
 ## How to use
 
 `model = model_sic_net(512, 7, 3, 3).cuda()` means creating a model as follow:
