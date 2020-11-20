@@ -26,57 +26,6 @@ class ResNet_block(nn.Module):
         # input_ = self.conv3(input_)
         return self.bn(x + input_)
 
-    def __init__(self, num_classes=7):
-        super(model_Unet, self).__init__()
-        self.num_classes = num_classes
-
-        self.conv = nn.Sequential(nn.Conv2d(128, 128, 3), nn.Dropout2d(),
-                                  nn.BatchNorm2d(128), nn.Tanh(),
-                                  nn.Conv2d(128, 128, 3), nn.Dropout2d(),
-                                  nn.BatchNorm2d(128), nn.Tanh(),
-                                  nn.Conv2d(128, 128, 3), nn.Dropout2d(),
-                                  nn.BatchNorm2d(128), nn.Tanh())
-        self.uns = nn.Sequential(nn.UpsamplingBilinear2d(size=(19, 19)),
-                                 nn.UpsamplingBilinear2d(size=(20, 20)))
-
-        self.conv1x1 = nn.Sequential(nn.BatchNorm2d(2048), nn.Tanh(),
-                                     nn.Conv2d(2048, 512, 1),
-                                     nn.BatchNorm2d(512), nn.Tanh())
-        self.conv1 = nn.Sequential(nn.Conv2d(512, 512, 3), nn.Dropout2d(),
-                                   nn.BatchNorm2d(512), nn.Tanh())
-        self.conv2 = nn.Sequential(nn.Conv2d(512, 512, 3), nn.Dropout2d(),
-                                   nn.BatchNorm2d(512), nn.Tanh())
-        self.conv3 = nn.Sequential(nn.Conv2d(512, 512, 3), nn.Dropout2d(),
-                                   nn.BatchNorm2d(512), nn.Tanh())
-
-        self.un1 = nn.Sequential(nn.UpsamplingBilinear2d(size=(26, 26)))
-        self.un2 = nn.Sequential(nn.BatchNorm2d(512), nn.Tanh(),
-                                 nn.UpsamplingBilinear2d(size=(28, 28)))
-        self.un3 = nn.Sequential(nn.BatchNorm2d(512), nn.Tanh(),
-                                 nn.UpsamplingBilinear2d(size=(30, 30)))
-        self.bn = nn.Sequential(nn.BatchNorm2d(512), nn.Tanh())
-        # self.fc = nn.Sequential(nn.Linear(2048,128),nn.Dropout(),nn.BatchNorm1d(128),nn.Tanh(),
-        # nn.Linear(128,64),nn.Dropout(),nn.BatchNorm1d(64),nn.Tanh(),
-        # nn.Linear(64,num_classes))
-        self.fc = nn.Sequential(nn.Linear(512, 128), nn.Dropout(0.4),
-                                nn.BatchNorm1d(128), nn.Tanh(),
-                                nn.Linear(128, num_classes))
-
-    def forward(self, x):
-        x = self.conv1x1(x)
-        x1 = self.conv1(x)
-        x2 = self.conv2(x1)
-        x3 = self.conv3(x2)
-        x3 = self.un1(x3)
-        x3 = self.un2(x3 + x2)
-        x3 = self.un3(x3 + x1)
-        x = self.bn(x + x3)
-        b, c, m, n = x.size()
-        out = torch.zeros((b, self.num_classes, m, n)).cuda()
-        for i, j in product(range(m), range(n)):
-            out[:, :, i, j] = self.fc(x[:, :, i, j])
-        return out
-
 
 class ReNet_layer(nn.Module):
     def __init__(self, input_channels, output_channels):
